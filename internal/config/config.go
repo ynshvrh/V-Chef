@@ -35,7 +35,7 @@ func Load() *Config {
 func parseOpenRouterModels() []string {
 	var models []string
 
-	// Check indexed env vars: OpenRouter__Models__0, OpenRouter__Models__1, etc.
+	// 1. Check indexed env vars: OpenRouter__Models__0, OpenRouter__Models__1, etc.
 	for i := 0; i < 10; i++ {
 		key := fmt.Sprintf("OpenRouter__Models__%d", i)
 		if val, exists := os.LookupEnv(key); exists && strings.TrimSpace(val) != "" {
@@ -43,7 +43,7 @@ func parseOpenRouterModels() []string {
 		}
 	}
 
-	// Check comma-separated OPENROUTER_MODELS
+	// 2. Check comma-separated OPENROUTER_MODELS
 	if len(models) == 0 {
 		if rawModels := getEnvAny("OPENROUTER_MODELS", "OpenRouter__Models"); rawModels != "" {
 			for _, m := range strings.Split(rawModels, ",") {
@@ -54,14 +54,28 @@ func parseOpenRouterModels() []string {
 		}
 	}
 
-	// Check single model fallback OPENROUTER_MODEL / OpenRouter__Model
+	// 3. Check single main/fallback model OPENROUTER_MODEL / OpenRouter__Model
+	mainModel := getEnvAny("OPENROUTER_MODEL", "OpenRouter__Model")
+
 	if len(models) == 0 {
-		if singleModel := getEnvAny("OPENROUTER_MODEL", "OpenRouter__Model"); singleModel != "" {
-			models = append(models, singleModel)
+		if mainModel != "" {
+			models = append(models, mainModel)
+		}
+	} else if mainModel != "" {
+		// If indexed models were specified, append mainModel as the final fallback (if not present)
+		alreadyPresent := false
+		for _, m := range models {
+			if strings.EqualFold(m, mainModel) {
+				alreadyPresent = true
+				break
+			}
+		}
+		if !alreadyPresent {
+			models = append(models, mainModel)
 		}
 	}
 
-	// Default fallback list (Free models first, paid model as last fallback)
+	// Default fallback list if nothing was configured
 	if len(models) == 0 {
 		models = []string{
 			"meta-llama/llama-3.3-70b-instruct:free",
