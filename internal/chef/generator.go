@@ -37,9 +37,16 @@ func (s *Service) GenerateRecipe(ctx context.Context, req models.GenerateRecipeR
 		return nil, fmt.Errorf("ingredients list cannot be empty")
 	}
 
-	// 1. OpenRouter API integration with automatic free/paid model fallback
+	// 1. OpenRouter API integration with dual-layer fallback
 	if s.cfg.OpenRouterAPIKey != "" {
-		return s.generateWithOpenRouter(ctx, req)
+		recipe, err := s.generateWithOpenRouter(ctx, req)
+		if err == nil {
+			return recipe, nil
+		}
+		// If OpenRouter failed for any reason, try single model retries before giving up
+		if fallbackRecipe, fallbackErr := s.generateWithOpenRouterSequential(ctx, req); fallbackErr == nil {
+			return fallbackRecipe, nil
+		}
 	}
 
 	// 2. Direct Gemini API integration (Secondary)
@@ -85,9 +92,14 @@ Target calories: %d`,
 		req.TargetCalories,
 	)
 
-	// Send models array to OpenRouter for native automatic fallback (Free models first, Paid fallback last)
+	// Ensure max 3 models in the array as required by OpenRouter API schema
+	modelsList := s.cfg.OpenRouterModels
+	if len(modelsList) > 3 {
+		modelsList = modelsList[:3]
+	}
+
 	payload := map[string]any{
-		"models": s.cfg.OpenRouterModels,
+		"models": modelsList,
 		"response_format": map[string]string{
 			"type": "json_object",
 		},
@@ -98,12 +110,73 @@ Target calories: %d`,
 		"temperature": 0.7,
 	}
 
-	// Fallback to single model key if only 1 model is specified
-	if len(s.cfg.OpenRouterModels) == 1 {
-		payload["model"] = s.cfg.OpenRouterModels[0]
+	if len(modelsList) == 1 {
+		payload["model"] = modelsList[0]
 		delete(payload, "models")
 	}
 
+	return s.sendOpenRouterPayload(ctx, url, payload)
+}
+
+func (s *Service) generateWithOpenRouterSequential(ctx context.Context, req models.GenerateRecipeRequest) (*models.RecipeResponse, error) {
+	url := "https://openrouter.ai/api/v1/chat/completions"
+
+	systemPrompt := `You are V-Chef, an expert culinary AI assistant. Return ONLY a valid JSON object matching this schema without markdown code blocks, backticks, or extra text:
+{
+  "title": "string",
+  "description": "string",
+  "prep_time_mins": 10,
+  "cook_time_mins": 20,
+  "servings": 2,
+  "calories": 450,
+  "protein_grams": 25.5,
+  "fat_grams": 15.0,
+  "carbs_grams": 40.0,
+  "ingredients": [
+    {"name": "Ingredient Name", "quantity": 100, "unit": "g", "in_fridge": true}
+  ],
+  "steps": [
+    "Step 1...", "Step 2..."
+  ]
+}`
+
+	userPrompt := fmt.Sprintf(`Available ingredients in fridge: %s
+Meal type: %s
+Dietary preference: %s
+Max prep time: %d mins
+Target calories: %d`,
+		strings.Join(req.Ingredients, ", "),
+		req.MealType,
+		req.DietaryCategory,
+		req.MaxPrepTimeMins,
+		req.TargetCalories,
+	)
+
+	var lastErr error
+	for _, modelName := range s.cfg.OpenRouterModels {
+		payload := map[string]any{
+			"model": modelName,
+			"response_format": map[string]string{
+				"type": "json_object",
+			},
+			"messages": []map[string]string{
+				{"role": "system", "content": systemPrompt},
+				{"role": "user", "content": userPrompt},
+			},
+			"temperature": 0.7,
+		}
+
+		recipe, err := s.sendOpenRouterPayload(ctx, url, payload)
+		if err == nil {
+			return recipe, nil
+		}
+		lastErr = err
+	}
+
+	return nil, fmt.Errorf("all sequential model retries failed: %w", lastErr)
+}
+
+func (s *Service) sendOpenRouterPayload(ctx context.Context, url string, payload map[string]any) (*models.RecipeResponse, error) {
 	bodyBytes, err := json.Marshal(payload)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal OpenRouter request: %w", err)
