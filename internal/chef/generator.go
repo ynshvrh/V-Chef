@@ -27,7 +27,7 @@ func NewService(cfg *config.Config) *Service {
 	return &Service{
 		cfg: cfg,
 		httpClient: &http.Client{
-			Timeout: 25 * time.Second,
+			Timeout: 30 * time.Second,
 		},
 	}
 }
@@ -37,13 +37,120 @@ func (s *Service) GenerateRecipe(ctx context.Context, req models.GenerateRecipeR
 		return nil, fmt.Errorf("ingredients list cannot be empty")
 	}
 
-	// If Gemini API Key is provided, use Google Gemini API
+	// 1. OpenRouter API integration (Priority)
+	if s.cfg.OpenRouterAPIKey != "" {
+		return s.generateWithOpenRouter(ctx, req)
+	}
+
+	// 2. Direct Gemini API integration (Secondary)
 	if s.cfg.GeminiAPIKey != "" {
 		return s.generateWithGemini(ctx, req)
 	}
 
-	// Fallback to heuristic recipe generator when AI API key is not configured
+	// 3. Fallback to heuristic recipe generator when no AI API key is configured
 	return s.generateFallback(req), nil
+}
+
+func (s *Service) generateWithOpenRouter(ctx context.Context, req models.GenerateRecipeRequest) (*models.RecipeResponse, error) {
+	url := "https://openrouter.ai/api/v1/chat/completions"
+
+	systemPrompt := `You are V-Chef, an expert culinary AI assistant. Return ONLY a valid JSON object matching this schema without markdown code blocks, backticks, or extra text:
+{
+  "title": "string",
+  "description": "string",
+  "prep_time_mins": 10,
+  "cook_time_mins": 20,
+  "servings": 2,
+  "calories": 450,
+  "protein_grams": 25.5,
+  "fat_grams": 15.0,
+  "carbs_grams": 40.0,
+  "ingredients": [
+    {"name": "Ingredient Name", "quantity": 100, "unit": "g", "in_fridge": true}
+  ],
+  "steps": [
+    "Step 1...", "Step 2..."
+  ]
+}`
+
+	userPrompt := fmt.Sprintf(`Available ingredients in fridge: %s
+Meal type: %s
+Dietary preference: %s
+Max prep time: %d mins
+Target calories: %d`,
+		strings.Join(req.Ingredients, ", "),
+		req.MealType,
+		req.DietaryCategory,
+		req.MaxPrepTimeMins,
+		req.TargetCalories,
+	)
+
+	payload := map[string]any{
+		"model": s.cfg.OpenRouterModel,
+		"response_format": map[string]string{
+			"type": "json_object",
+		},
+		"messages": []map[string]string{
+			{"role": "system", "content": systemPrompt},
+			{"role": "user", "content": userPrompt},
+		},
+		"temperature": 0.7,
+	}
+
+	bodyBytes, err := json.Marshal(payload)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal OpenRouter request: %w", err)
+	}
+
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(bodyBytes))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.cfg.OpenRouterAPIKey))
+	httpReq.Header.Set("HTTP-Referer", "https://v-fridge.com")
+	httpReq.Header.Set("X-Title", "V-Chef")
+
+	resp, err := s.httpClient.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send request to OpenRouter API: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		respBody, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("OpenRouter API error (status %d): %s", resp.StatusCode, string(respBody))
+	}
+
+	var openRouterResp struct {
+		Choices []struct {
+			Message struct {
+				Content string `json:"content"`
+			} `json:"message"`
+		} `json:"choices"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&openRouterResp); err != nil {
+		return nil, fmt.Errorf("failed to decode OpenRouter response: %w", err)
+	}
+
+	if len(openRouterResp.Choices) == 0 || openRouterResp.Choices[0].Message.Content == "" {
+		return nil, fmt.Errorf("empty response from OpenRouter API")
+	}
+
+	jsonText := strings.TrimSpace(openRouterResp.Choices[0].Message.Content)
+	jsonText = strings.TrimPrefix(jsonText, "```json")
+	jsonText = strings.TrimPrefix(jsonText, "```")
+	jsonText = strings.TrimSuffix(jsonText, "```")
+	jsonText = strings.TrimSpace(jsonText)
+
+	var recipe models.RecipeResponse
+	if err := json.Unmarshal([]byte(jsonText), &recipe); err != nil {
+		return nil, fmt.Errorf("failed to parse OpenRouter JSON recipe: %w", err)
+	}
+
+	recipe.GeneratedAt = time.Now().UTC()
+	return &recipe, nil
 }
 
 func (s *Service) generateWithGemini(ctx context.Context, req models.GenerateRecipeRequest) (*models.RecipeResponse, error) {

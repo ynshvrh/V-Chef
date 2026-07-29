@@ -6,23 +6,26 @@ import (
 )
 
 type Config struct {
-	Port         string
-	GeminiAPIKey string
-	OpenAIAPIKey string
-	Environment  string
+	Port             string
+	OpenRouterAPIKey string
+	OpenRouterModel  string
+	GeminiAPIKey     string
+	Environment      string
 }
 
 func Load() *Config {
 	port := getEnv("PORT", "8085")
+	openRouterKey := getEnv("OPENROUTER_API_KEY", "")
+	openRouterModel := getEnv("OPENROUTER_MODEL", "google/gemini-2.5-flash")
 	geminiKey := getEnv("GEMINI_API_KEY", "")
-	openAIKey := getEnv("OPENAI_API_KEY", "")
 	env := getEnv("ENV", "development")
 
 	return &Config{
-		Port:         port,
-		GeminiAPIKey: geminiKey,
-		OpenAIAPIKey: openAIKey,
-		Environment:  env,
+		Port:             port,
+		OpenRouterAPIKey: openRouterKey,
+		OpenRouterModel:  openRouterModel,
+		GeminiAPIKey:     geminiKey,
+		Environment:      env,
 	}
 }
 
