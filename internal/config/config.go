@@ -33,22 +33,22 @@ func Load() *Config {
 }
 
 func parseOpenRouterModels() []string {
-	var models []string
+	var freeModels []string
 
 	// 1. Check indexed env vars: OpenRouter__Models__0, OpenRouter__Models__1, etc.
 	for i := 0; i < 10; i++ {
 		key := fmt.Sprintf("OpenRouter__Models__%d", i)
 		if val, exists := os.LookupEnv(key); exists && strings.TrimSpace(val) != "" {
-			models = append(models, strings.TrimSpace(val))
+			freeModels = append(freeModels, strings.TrimSpace(val))
 		}
 	}
 
 	// 2. Check comma-separated OPENROUTER_MODELS
-	if len(models) == 0 {
+	if len(freeModels) == 0 {
 		if rawModels := getEnvAny("OPENROUTER_MODELS", "OpenRouter__Models"); rawModels != "" {
 			for _, m := range strings.Split(rawModels, ",") {
 				if trimmed := strings.TrimSpace(m); trimmed != "" {
-					models = append(models, trimmed)
+					freeModels = append(freeModels, trimmed)
 				}
 			}
 		}
@@ -56,36 +56,32 @@ func parseOpenRouterModels() []string {
 
 	// 3. Check single main/fallback model OPENROUTER_MODEL / OpenRouter__Model
 	mainModel := getEnvAny("OPENROUTER_MODEL", "OpenRouter__Model")
+	if mainModel == "" {
+		mainModel = "google/gemini-2.5-flash"
+	}
 
-	if len(models) == 0 {
-		if mainModel != "" {
-			models = append(models, mainModel)
+	var finalModels []string
+	if len(freeModels) == 0 {
+		finalModels = []string{
+			"google/gemma-4-31b-it:free",
+			"nvidia/nemotron-3-super-120b-a12b:free",
+			mainModel,
 		}
-	} else if mainModel != "" {
-		// If indexed models were specified, append mainModel as the final fallback (if not present)
-		alreadyPresent := false
-		for _, m := range models {
-			if strings.EqualFold(m, mainModel) {
-				alreadyPresent = true
+	} else {
+		// OpenRouter API strictly requires max 3 items in the 'models' array.
+		// Keep up to 2 free models and place the main paid fallback model as the 3rd item.
+		for _, m := range freeModels {
+			if !strings.EqualFold(m, mainModel) {
+				finalModels = append(finalModels, m)
+			}
+			if len(finalModels) == 2 {
 				break
 			}
 		}
-		if !alreadyPresent {
-			models = append(models, mainModel)
-		}
+		finalModels = append(finalModels, mainModel)
 	}
 
-	// Default fallback list if nothing was configured
-	if len(models) == 0 {
-		models = []string{
-			"meta-llama/llama-3.3-70b-instruct:free",
-			"qwen/qwen3-next-80b-a3b-instruct:free",
-			"google/gemma-4-31b-it:free",
-			"google/gemini-2.5-flash",
-		}
-	}
-
-	return models
+	return finalModels
 }
 
 func getEnv(key, fallback string) string {
