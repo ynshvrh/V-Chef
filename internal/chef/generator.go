@@ -27,7 +27,7 @@ func NewService(cfg *config.Config) *Service {
 	return &Service{
 		cfg: cfg,
 		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
+			Timeout: 35 * time.Second,
 		},
 	}
 }
@@ -37,7 +37,7 @@ func (s *Service) GenerateRecipe(ctx context.Context, req models.GenerateRecipeR
 		return nil, fmt.Errorf("ingredients list cannot be empty")
 	}
 
-	// 1. OpenRouter API integration (Priority)
+	// 1. OpenRouter API integration with automatic free/paid model fallback
 	if s.cfg.OpenRouterAPIKey != "" {
 		return s.generateWithOpenRouter(ctx, req)
 	}
@@ -85,8 +85,9 @@ Target calories: %d`,
 		req.TargetCalories,
 	)
 
+	// Send models array to OpenRouter for native automatic fallback (Free models first, Paid fallback last)
 	payload := map[string]any{
-		"model": s.cfg.OpenRouterModel,
+		"models": s.cfg.OpenRouterModels,
 		"response_format": map[string]string{
 			"type": "json_object",
 		},
@@ -95,6 +96,12 @@ Target calories: %d`,
 			{"role": "user", "content": userPrompt},
 		},
 		"temperature": 0.7,
+	}
+
+	// Fallback to single model key if only 1 model is specified
+	if len(s.cfg.OpenRouterModels) == 1 {
+		payload["model"] = s.cfg.OpenRouterModels[0]
+		delete(payload, "models")
 	}
 
 	bodyBytes, err := json.Marshal(payload)
@@ -108,8 +115,8 @@ Target calories: %d`,
 	}
 	httpReq.Header.Set("Content-Type", "application/json")
 	httpReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.cfg.OpenRouterAPIKey))
-	httpReq.Header.Set("HTTP-Referer", "https://v-fridge.com")
-	httpReq.Header.Set("X-Title", "V-Chef")
+	httpReq.Header.Set("HTTP-Referer", "https://v-fridge.app")
+	httpReq.Header.Set("X-Title", "V-Fridge")
 
 	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
@@ -128,6 +135,7 @@ Target calories: %d`,
 				Content string `json:"content"`
 			} `json:"message"`
 		} `json:"choices"`
+		Model string `json:"model"`
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&openRouterResp); err != nil {
@@ -146,7 +154,7 @@ Target calories: %d`,
 
 	var recipe models.RecipeResponse
 	if err := json.Unmarshal([]byte(jsonText), &recipe); err != nil {
-		return nil, fmt.Errorf("failed to parse OpenRouter JSON recipe: %w", err)
+		return nil, fmt.Errorf("failed to parse OpenRouter JSON recipe from model (%s): %w", openRouterResp.Model, err)
 	}
 
 	recipe.GeneratedAt = time.Now().UTC()
