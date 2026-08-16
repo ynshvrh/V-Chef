@@ -8,6 +8,7 @@ import (
 
 type Config struct {
 	Port             string
+	GrpcPort         string
 	OpenRouterAPIKey string
 	OpenRouterModels []string
 	GeminiAPIKey     string
@@ -17,6 +18,7 @@ type Config struct {
 
 func Load() *Config {
 	port := getEnv("PORT", "8085")
+	grpcPort := getEnv("GRPC_PORT", "50051")
 	openRouterKey := getEnvAny("OPENROUTER_API_KEY", "OpenRouter__ApiKey")
 	geminiKey := getEnvAny("GEMINI_API_KEY", "Gemini__ApiKey")
 	env := getEnv("ENV", "development")
@@ -27,6 +29,7 @@ func Load() *Config {
 
 	return &Config{
 		Port:             port,
+		GrpcPort:         grpcPort,
 		OpenRouterAPIKey: openRouterKey,
 		OpenRouterModels: models,
 		GeminiAPIKey:     geminiKey,
