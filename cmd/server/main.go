@@ -20,7 +20,7 @@ func main() {
 
 	chefService := chef.NewService(cfg)
 	recipeHandler := handler.NewRecipeHandler(chefService)
-	router := handler.NewRouter(recipeHandler)
+	router := handler.NewRouter(recipeHandler, cfg.InternalToken)
 
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%s", cfg.Port),

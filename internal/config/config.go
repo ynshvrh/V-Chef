@@ -12,6 +12,7 @@ type Config struct {
 	OpenRouterModels []string
 	GeminiAPIKey     string
 	Environment      string
+	InternalToken    string
 }
 
 func Load() *Config {
@@ -19,6 +20,7 @@ func Load() *Config {
 	openRouterKey := getEnvAny("OPENROUTER_API_KEY", "OpenRouter__ApiKey")
 	geminiKey := getEnvAny("GEMINI_API_KEY", "Gemini__ApiKey")
 	env := getEnv("ENV", "development")
+	internalToken := getEnvAny("INTERNAL_TOKEN", "InternalToken", "VChef__InternalToken")
 
 	// Parse fallback models list
 	models := parseOpenRouterModels()
@@ -29,6 +31,7 @@ func Load() *Config {
 		OpenRouterModels: models,
 		GeminiAPIKey:     geminiKey,
 		Environment:      env,
+		InternalToken:    internalToken,
 	}
 }
 
