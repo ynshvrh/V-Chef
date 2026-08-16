@@ -18,11 +18,11 @@ func TestGenerateRecipeFallback(t *testing.T) {
 	service := NewService(cfg)
 
 	req := models.GenerateRecipeRequest{
-		Ingredients:      []string{"milk", "eggs"},
-		MealType:         "breakfast",
-		DietaryCategory:  "vegetarian",
-		MaxPrepTimeMins:  15,
-		TargetCalories:   400,
+		Ingredients:     []string{"milk", "eggs"},
+		MealType:        "breakfast",
+		DietaryCategory: "vegetarian",
+		MaxPrepTimeMins: 15,
+		TargetCalories:  400,
 	}
 
 	recipe, err := service.GenerateRecipe(context.Background(), req)

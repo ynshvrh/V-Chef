@@ -4,11 +4,11 @@ import "time"
 
 // GenerateRecipeRequest represents the request payload from V-Fridge
 type GenerateRecipeRequest struct {
-	Ingredients      []string `json:"ingredients"`                 // e.g. ["milk", "eggs", "flour"]
-	MealType         string   `json:"meal_type,omitempty"`         // e.g. "breakfast", "lunch", "dinner", "snack"
-	DietaryCategory  string   `json:"dietary_category,omitempty"`  // e.g. "keto", "vegan", "vegetarian", "any"
-	MaxPrepTimeMins  int      `json:"max_prep_time_mins,omitempty"`// e.g. 30
-	TargetCalories   int      `json:"target_calories,omitempty"`   // e.g. 500
+	Ingredients     []string `json:"ingredients"`                  // e.g. ["milk", "eggs", "flour"]
+	MealType        string   `json:"meal_type,omitempty"`          // e.g. "breakfast", "lunch", "dinner", "snack"
+	DietaryCategory string   `json:"dietary_category,omitempty"`   // e.g. "keto", "vegan", "vegetarian", "any"
+	MaxPrepTimeMins int      `json:"max_prep_time_mins,omitempty"` // e.g. 30
+	TargetCalories  int      `json:"target_calories,omitempty"`    // e.g. 500
 }
 
 // RecipeIngredient represents a single ingredient item in a generated recipe

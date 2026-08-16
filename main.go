@@ -1,3 +1,4 @@
+// Note: Root main.go is maintained alongside cmd/server/main.go for Render build/deploy compatibility.
 package main
 
 import (

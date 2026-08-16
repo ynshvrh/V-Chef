@@ -10,6 +10,9 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+
 	"github.com/ynshvrh/V-Chef/internal/config"
 	"github.com/ynshvrh/V-Chef/internal/models"
 )
@@ -58,10 +61,8 @@ func (s *Service) GenerateRecipe(ctx context.Context, req models.GenerateRecipeR
 	return s.generateFallback(req), nil
 }
 
-func (s *Service) generateWithOpenRouter(ctx context.Context, req models.GenerateRecipeRequest) (*models.RecipeResponse, error) {
-	url := "https://openrouter.ai/api/v1/chat/completions"
-
-	systemPrompt := `You are V-Chef, an expert culinary AI assistant. Return ONLY a valid JSON object matching this schema without markdown code blocks, backticks, or extra text:
+func buildPrompts(req models.GenerateRecipeRequest) (systemPrompt, userPrompt string) {
+	systemPrompt = `You are V-Chef, an expert culinary AI assistant. Return ONLY a valid JSON object matching this schema without markdown code blocks, backticks, or extra text:
 {
   "title": "string",
   "description": "string",
@@ -80,7 +81,7 @@ func (s *Service) generateWithOpenRouter(ctx context.Context, req models.Generat
   ]
 }`
 
-	userPrompt := fmt.Sprintf(`Available ingredients in fridge: %s
+	userPrompt = fmt.Sprintf(`Available ingredients in fridge: %s
 Meal type: %s
 Dietary preference: %s
 Max prep time: %d mins
@@ -91,6 +92,14 @@ Target calories: %d`,
 		req.MaxPrepTimeMins,
 		req.TargetCalories,
 	)
+
+	return systemPrompt, userPrompt
+}
+
+func (s *Service) generateWithOpenRouter(ctx context.Context, req models.GenerateRecipeRequest) (*models.RecipeResponse, error) {
+	url := "https://openrouter.ai/api/v1/chat/completions"
+
+	systemPrompt, userPrompt := buildPrompts(req)
 
 	// Ensure max 3 models in the array as required by OpenRouter API schema
 	modelsList := s.cfg.OpenRouterModels
@@ -121,36 +130,7 @@ Target calories: %d`,
 func (s *Service) generateWithOpenRouterSequential(ctx context.Context, req models.GenerateRecipeRequest) (*models.RecipeResponse, error) {
 	url := "https://openrouter.ai/api/v1/chat/completions"
 
-	systemPrompt := `You are V-Chef, an expert culinary AI assistant. Return ONLY a valid JSON object matching this schema without markdown code blocks, backticks, or extra text:
-{
-  "title": "string",
-  "description": "string",
-  "prep_time_mins": 10,
-  "cook_time_mins": 20,
-  "servings": 2,
-  "calories": 450,
-  "protein_grams": 25.5,
-  "fat_grams": 15.0,
-  "carbs_grams": 40.0,
-  "ingredients": [
-    {"name": "Ingredient Name", "quantity": 100, "unit": "g", "in_fridge": true}
-  ],
-  "steps": [
-    "Step 1...", "Step 2..."
-  ]
-}`
-
-	userPrompt := fmt.Sprintf(`Available ingredients in fridge: %s
-Meal type: %s
-Dietary preference: %s
-Max prep time: %d mins
-Target calories: %d`,
-		strings.Join(req.Ingredients, ", "),
-		req.MealType,
-		req.DietaryCategory,
-		req.MaxPrepTimeMins,
-		req.TargetCalories,
-	)
+	systemPrompt, userPrompt := buildPrompts(req)
 
 	var lastErr error
 	for _, modelName := range s.cfg.OpenRouterModels {
@@ -335,9 +315,10 @@ Target calories: %d`,
 }
 
 func (s *Service) generateFallback(req models.GenerateRecipeRequest) *models.RecipeResponse {
-	title := fmt.Sprintf("Фірмовий %s з %s", strings.Title(req.MealType), strings.Title(req.Ingredients[0]))
+	titleCaser := cases.Title(language.Ukrainian)
+	title := fmt.Sprintf("Фірмовий %s з %s", titleCaser.String(req.MealType), titleCaser.String(req.Ingredients[0]))
 	if req.MealType == "" {
-		title = fmt.Sprintf("Швидка страва з %s", strings.Title(req.Ingredients[0]))
+		title = fmt.Sprintf("Швидка страва з %s", titleCaser.String(req.Ingredients[0]))
 	}
 
 	recipeIngredients := make([]models.RecipeIngredient, 0, len(req.Ingredients))
