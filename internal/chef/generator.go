@@ -62,7 +62,13 @@ func (s *Service) GenerateRecipe(ctx context.Context, req models.GenerateRecipeR
 }
 
 func buildPrompts(req models.GenerateRecipeRequest) (systemPrompt, userPrompt string) {
-	systemPrompt = `You are V-Chef, an expert culinary AI assistant. Return ONLY a valid JSON object matching this schema without markdown code blocks, backticks, or extra text:
+	systemPrompt = `You are V-Chef, an expert executive culinary AI assistant.
+CRITICAL GASTRONOMIC & REALISM RULES:
+1. Real Culinary Authenticity: Suggest ONLY authentic, appetizing, delicious recipes that real people cook. NEVER invent bizarre combinations just to force unrelated ingredients into one dish (e.g. NEVER combine sweet milk porridge or confectionery with poultry/meat/fish).
+2. Flavor Pairing: If ingredients are unrelated, pick a coherent subset for a great meal; list missing staples with in_fridge=false rather than creating an unpalatable recipe.
+3. Realistic prep/cook times and heat levels.
+
+Return ONLY a valid JSON object matching this schema without markdown code blocks, backticks, or extra text:
 {
   "title": "string",
   "description": "string",
