@@ -67,6 +67,11 @@ CRITICAL GASTRONOMIC & REALISM RULES:
 1. Real Culinary Authenticity: Suggest ONLY authentic, appetizing, delicious recipes that real people cook. NEVER invent bizarre combinations just to force unrelated ingredients into one dish (e.g. NEVER combine sweet milk porridge or confectionery with poultry/meat/fish).
 2. Flavor Pairing: If ingredients are unrelated, pick a coherent subset for a great meal; list missing staples with in_fridge=false rather than creating an unpalatable recipe.
 3. Realistic prep/cook times and heat levels.
+4. STRICT INGREDIENT SCHEMA ENFORCEMENT:
+   - "name": MUST contain ONLY the pure product name (e.g., "Морква", "Борошно", "Молоко", "Куряче філе"). NEVER include digits, counts, or units in the "name" field (e.g., NEVER "1 морква", "200г борошна").
+   - "quantity": Numeric quantity only (e.g., 1, 200, 0.5).
+   - "unit": Standard unit only (e.g., "шт", "г", "кг", "мл", "л", "ст.л.", "ч.л.", "дрібка", "зубчик").
+   - "in_fridge": boolean (true if user already has it in fridge, false if missing/to buy).
 
 Return ONLY a valid JSON object matching this schema without markdown code blocks, backticks, or extra text:
 {
@@ -80,7 +85,7 @@ Return ONLY a valid JSON object matching this schema without markdown code block
   "fat_grams": 15.0,
   "carbs_grams": 40.0,
   "ingredients": [
-    {"name": "Ingredient Name", "quantity": 100, "unit": "g", "in_fridge": true}
+    {"name": "Морква", "quantity": 1, "unit": "шт", "in_fridge": true}
   ],
   "steps": [
     "Step 1...", "Step 2..."
@@ -217,13 +222,17 @@ func (s *Service) sendOpenRouterPayload(ctx context.Context, url string, payload
 	}
 
 	recipe.GeneratedAt = time.Now().UTC()
-	return &recipe, nil
+	return NormalizeRecipe(&recipe), nil
 }
 
 func (s *Service) generateWithGemini(ctx context.Context, req models.GenerateRecipeRequest) (*models.RecipeResponse, error) {
 	url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=%s", s.cfg.GeminiAPIKey)
 
-	prompt := fmt.Sprintf(`System: You are V-Chef, an expert culinary assistant. Return ONLY a valid JSON object matching this schema, without any markdown formatting or commentary:
+	prompt := fmt.Sprintf(`System: You are V-Chef, an expert culinary assistant.
+STRICT RULES:
+1. Real culinary authenticity & delicious flavor pairing.
+2. In 'ingredients', 'name' MUST contain ONLY pure product name without numbers or units (e.g. 'Морква'). Put count in 'quantity' (e.g. 1) and unit in 'unit' (e.g. 'шт').
+Return ONLY a valid JSON object matching this schema, without any markdown formatting or commentary:
 {
   "title": "string",
   "description": "string",
@@ -235,7 +244,7 @@ func (s *Service) generateWithGemini(ctx context.Context, req models.GenerateRec
   "fat_grams": 15.0,
   "carbs_grams": 40.0,
   "ingredients": [
-    {"name": "Ingredient Name", "quantity": 100, "unit": "g", "in_fridge": true}
+    {"name": "Морква", "quantity": 1, "unit": "шт", "in_fridge": true}
   ],
   "steps": [
     "Step 1...", "Step 2..."
@@ -317,7 +326,7 @@ Target calories: %d`,
 	}
 
 	recipe.GeneratedAt = time.Now().UTC()
-	return &recipe, nil
+	return NormalizeRecipe(&recipe), nil
 }
 
 func (s *Service) generateFallback(req models.GenerateRecipeRequest) *models.RecipeResponse {
@@ -337,7 +346,7 @@ func (s *Service) generateFallback(req models.GenerateRecipeRequest) *models.Rec
 		})
 	}
 
-	return &models.RecipeResponse{
+	res := &models.RecipeResponse{
 		Title:        title,
 		Description:  fmt.Sprintf("Смачна та поживна страва, приготована з продуктів у вашому холодильнику (%s).", strings.Join(req.Ingredients, ", ")),
 		PrepTimeMins: 10,
@@ -356,4 +365,5 @@ func (s *Service) generateFallback(req models.GenerateRecipeRequest) *models.Rec
 		},
 		GeneratedAt: time.Now().UTC(),
 	}
+	return NormalizeRecipe(res)
 }
