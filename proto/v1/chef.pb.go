@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.12
 // 	protoc        v7.35.1
-// source: proto/v1/chef.proto
+// source: chef.proto
 
 package vchefv1
 
@@ -34,7 +34,7 @@ type GenerateRecipeRequest struct {
 
 func (x *GenerateRecipeRequest) Reset() {
 	*x = GenerateRecipeRequest{}
-	mi := &file_proto_v1_chef_proto_msgTypes[0]
+	mi := &file_chef_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46,7 +46,7 @@ func (x *GenerateRecipeRequest) String() string {
 func (*GenerateRecipeRequest) ProtoMessage() {}
 
 func (x *GenerateRecipeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_chef_proto_msgTypes[0]
+	mi := &file_chef_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59,7 +59,7 @@ func (x *GenerateRecipeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GenerateRecipeRequest.ProtoReflect.Descriptor instead.
 func (*GenerateRecipeRequest) Descriptor() ([]byte, []int) {
-	return file_proto_v1_chef_proto_rawDescGZIP(), []int{0}
+	return file_chef_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *GenerateRecipeRequest) GetIngredients() []string {
@@ -109,7 +109,7 @@ type RecipeIngredient struct {
 
 func (x *RecipeIngredient) Reset() {
 	*x = RecipeIngredient{}
-	mi := &file_proto_v1_chef_proto_msgTypes[1]
+	mi := &file_chef_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -121,7 +121,7 @@ func (x *RecipeIngredient) String() string {
 func (*RecipeIngredient) ProtoMessage() {}
 
 func (x *RecipeIngredient) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_chef_proto_msgTypes[1]
+	mi := &file_chef_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -134,7 +134,7 @@ func (x *RecipeIngredient) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecipeIngredient.ProtoReflect.Descriptor instead.
 func (*RecipeIngredient) Descriptor() ([]byte, []int) {
-	return file_proto_v1_chef_proto_rawDescGZIP(), []int{1}
+	return file_chef_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *RecipeIngredient) GetName() string {
@@ -185,7 +185,7 @@ type GenerateRecipeResponse struct {
 
 func (x *GenerateRecipeResponse) Reset() {
 	*x = GenerateRecipeResponse{}
-	mi := &file_proto_v1_chef_proto_msgTypes[2]
+	mi := &file_chef_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -197,7 +197,7 @@ func (x *GenerateRecipeResponse) String() string {
 func (*GenerateRecipeResponse) ProtoMessage() {}
 
 func (x *GenerateRecipeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_chef_proto_msgTypes[2]
+	mi := &file_chef_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -210,7 +210,7 @@ func (x *GenerateRecipeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GenerateRecipeResponse.ProtoReflect.Descriptor instead.
 func (*GenerateRecipeResponse) Descriptor() ([]byte, []int) {
-	return file_proto_v1_chef_proto_rawDescGZIP(), []int{2}
+	return file_chef_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *GenerateRecipeResponse) GetTitle() string {
@@ -297,6 +297,202 @@ func (x *GenerateRecipeResponse) GetGeneratedAt() string {
 	return ""
 }
 
+type ChatHistoryItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Role          string                 `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`
+	Content       string                 `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ChatHistoryItem) Reset() {
+	*x = ChatHistoryItem{}
+	mi := &file_chef_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChatHistoryItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChatHistoryItem) ProtoMessage() {}
+
+func (x *ChatHistoryItem) ProtoReflect() protoreflect.Message {
+	mi := &file_chef_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChatHistoryItem.ProtoReflect.Descriptor instead.
+func (*ChatHistoryItem) Descriptor() ([]byte, []int) {
+	return file_chef_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *ChatHistoryItem) GetRole() string {
+	if x != nil {
+		return x.Role
+	}
+	return ""
+}
+
+func (x *ChatHistoryItem) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
+type ChatRequest struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	History           []*ChatHistoryItem     `protobuf:"bytes,1,rep,name=history,proto3" json:"history,omitempty"`
+	Message           string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Inventory         []string               `protobuf:"bytes,3,rep,name=inventory,proto3" json:"inventory,omitempty"`
+	Language          string                 `protobuf:"bytes,4,opt,name=language,proto3" json:"language,omitempty"`
+	CuisinePreference string                 `protobuf:"bytes,5,opt,name=cuisine_preference,json=cuisinePreference,proto3" json:"cuisine_preference,omitempty"`
+	DietaryProfile    string                 `protobuf:"bytes,6,opt,name=dietary_profile,json=dietaryProfile,proto3" json:"dietary_profile,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *ChatRequest) Reset() {
+	*x = ChatRequest{}
+	mi := &file_chef_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChatRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChatRequest) ProtoMessage() {}
+
+func (x *ChatRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_chef_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChatRequest.ProtoReflect.Descriptor instead.
+func (*ChatRequest) Descriptor() ([]byte, []int) {
+	return file_chef_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *ChatRequest) GetHistory() []*ChatHistoryItem {
+	if x != nil {
+		return x.History
+	}
+	return nil
+}
+
+func (x *ChatRequest) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *ChatRequest) GetInventory() []string {
+	if x != nil {
+		return x.Inventory
+	}
+	return nil
+}
+
+func (x *ChatRequest) GetLanguage() string {
+	if x != nil {
+		return x.Language
+	}
+	return ""
+}
+
+func (x *ChatRequest) GetCuisinePreference() string {
+	if x != nil {
+		return x.CuisinePreference
+	}
+	return ""
+}
+
+func (x *ChatRequest) GetDietaryProfile() string {
+	if x != nil {
+		return x.DietaryProfile
+	}
+	return ""
+}
+
+type ChatResponse struct {
+	state               protoimpl.MessageState  `protogen:"open.v1"`
+	Reply               string                  `protobuf:"bytes,1,opt,name=reply,proto3" json:"reply,omitempty"`
+	Recipe              *GenerateRecipeResponse `protobuf:"bytes,2,opt,name=recipe,proto3" json:"recipe,omitempty"`
+	ShoppingSuggestions []*RecipeIngredient     `protobuf:"bytes,3,rep,name=shopping_suggestions,json=shoppingSuggestions,proto3" json:"shopping_suggestions,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *ChatResponse) Reset() {
+	*x = ChatResponse{}
+	mi := &file_chef_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChatResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChatResponse) ProtoMessage() {}
+
+func (x *ChatResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_chef_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChatResponse.ProtoReflect.Descriptor instead.
+func (*ChatResponse) Descriptor() ([]byte, []int) {
+	return file_chef_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ChatResponse) GetReply() string {
+	if x != nil {
+		return x.Reply
+	}
+	return ""
+}
+
+func (x *ChatResponse) GetRecipe() *GenerateRecipeResponse {
+	if x != nil {
+		return x.Recipe
+	}
+	return nil
+}
+
+func (x *ChatResponse) GetShoppingSuggestions() []*RecipeIngredient {
+	if x != nil {
+		return x.ShoppingSuggestions
+	}
+	return nil
+}
+
 type HealthCheckRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -305,7 +501,7 @@ type HealthCheckRequest struct {
 
 func (x *HealthCheckRequest) Reset() {
 	*x = HealthCheckRequest{}
-	mi := &file_proto_v1_chef_proto_msgTypes[3]
+	mi := &file_chef_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -317,7 +513,7 @@ func (x *HealthCheckRequest) String() string {
 func (*HealthCheckRequest) ProtoMessage() {}
 
 func (x *HealthCheckRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_chef_proto_msgTypes[3]
+	mi := &file_chef_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -330,7 +526,7 @@ func (x *HealthCheckRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HealthCheckRequest.ProtoReflect.Descriptor instead.
 func (*HealthCheckRequest) Descriptor() ([]byte, []int) {
-	return file_proto_v1_chef_proto_rawDescGZIP(), []int{3}
+	return file_chef_proto_rawDescGZIP(), []int{6}
 }
 
 type HealthCheckResponse struct {
@@ -342,7 +538,7 @@ type HealthCheckResponse struct {
 
 func (x *HealthCheckResponse) Reset() {
 	*x = HealthCheckResponse{}
-	mi := &file_proto_v1_chef_proto_msgTypes[4]
+	mi := &file_chef_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -354,7 +550,7 @@ func (x *HealthCheckResponse) String() string {
 func (*HealthCheckResponse) ProtoMessage() {}
 
 func (x *HealthCheckResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_chef_proto_msgTypes[4]
+	mi := &file_chef_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -367,7 +563,7 @@ func (x *HealthCheckResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HealthCheckResponse.ProtoReflect.Descriptor instead.
 func (*HealthCheckResponse) Descriptor() ([]byte, []int) {
-	return file_proto_v1_chef_proto_rawDescGZIP(), []int{4}
+	return file_chef_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *HealthCheckResponse) GetStatus() string {
@@ -377,11 +573,12 @@ func (x *HealthCheckResponse) GetStatus() string {
 	return ""
 }
 
-var File_proto_v1_chef_proto protoreflect.FileDescriptor
+var File_chef_proto protoreflect.FileDescriptor
 
-const file_proto_v1_chef_proto_rawDesc = "" +
+const file_chef_proto_rawDesc = "" +
 	"\n" +
-	"\x13proto/v1/chef.proto\x12\bvchef.v1\"\xd7\x01\n" +
+	"\n" +
+	"chef.proto\x12\bvchef.v1\"\xd7\x01\n" +
 	"\x15GenerateRecipeRequest\x12 \n" +
 	"\vingredients\x18\x01 \x03(\tR\vingredients\x12\x1b\n" +
 	"\tmeal_type\x18\x02 \x01(\tR\bmealType\x12)\n" +
@@ -407,67 +604,90 @@ const file_proto_v1_chef_proto_rawDesc = "" +
 	"\vingredients\x18\n" +
 	" \x03(\v2\x1a.vchef.v1.RecipeIngredientR\vingredients\x12\x14\n" +
 	"\x05steps\x18\v \x03(\tR\x05steps\x12!\n" +
-	"\fgenerated_at\x18\f \x01(\tR\vgeneratedAt\"\x14\n" +
+	"\fgenerated_at\x18\f \x01(\tR\vgeneratedAt\"?\n" +
+	"\x0fChatHistoryItem\x12\x12\n" +
+	"\x04role\x18\x01 \x01(\tR\x04role\x12\x18\n" +
+	"\acontent\x18\x02 \x01(\tR\acontent\"\xee\x01\n" +
+	"\vChatRequest\x123\n" +
+	"\ahistory\x18\x01 \x03(\v2\x19.vchef.v1.ChatHistoryItemR\ahistory\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1c\n" +
+	"\tinventory\x18\x03 \x03(\tR\tinventory\x12\x1a\n" +
+	"\blanguage\x18\x04 \x01(\tR\blanguage\x12-\n" +
+	"\x12cuisine_preference\x18\x05 \x01(\tR\x11cuisinePreference\x12'\n" +
+	"\x0fdietary_profile\x18\x06 \x01(\tR\x0edietaryProfile\"\xad\x01\n" +
+	"\fChatResponse\x12\x14\n" +
+	"\x05reply\x18\x01 \x01(\tR\x05reply\x128\n" +
+	"\x06recipe\x18\x02 \x01(\v2 .vchef.v1.GenerateRecipeResponseR\x06recipe\x12M\n" +
+	"\x14shopping_suggestions\x18\x03 \x03(\v2\x1a.vchef.v1.RecipeIngredientR\x13shoppingSuggestions\"\x14\n" +
 	"\x12HealthCheckRequest\"-\n" +
 	"\x13HealthCheckResponse\x12\x16\n" +
-	"\x06status\x18\x01 \x01(\tR\x06status2\xae\x01\n" +
+	"\x06status\x18\x01 \x01(\tR\x06status2\xe5\x01\n" +
 	"\vChefService\x12S\n" +
-	"\x0eGenerateRecipe\x12\x1f.vchef.v1.GenerateRecipeRequest\x1a .vchef.v1.GenerateRecipeResponse\x12J\n" +
-	"\vHealthCheck\x12\x1c.vchef.v1.HealthCheckRequest\x1a\x1d.vchef.v1.HealthCheckResponseB0Z.github.com/ynshvrh/V-Chef/pkg/vchef/v1;vchefv1b\x06proto3"
+	"\x0eGenerateRecipe\x12\x1f.vchef.v1.GenerateRecipeRequest\x1a .vchef.v1.GenerateRecipeResponse\x125\n" +
+	"\x04Chat\x12\x15.vchef.v1.ChatRequest\x1a\x16.vchef.v1.ChatResponse\x12J\n" +
+	"\vHealthCheck\x12\x1c.vchef.v1.HealthCheckRequest\x1a\x1d.vchef.v1.HealthCheckResponseBDZ*github.com/ynshvrh/V-Chef/proto/v1;vchefv1\xaa\x02\x15VFridge.Api.Protos.V1b\x06proto3"
 
 var (
-	file_proto_v1_chef_proto_rawDescOnce sync.Once
-	file_proto_v1_chef_proto_rawDescData []byte
+	file_chef_proto_rawDescOnce sync.Once
+	file_chef_proto_rawDescData []byte
 )
 
-func file_proto_v1_chef_proto_rawDescGZIP() []byte {
-	file_proto_v1_chef_proto_rawDescOnce.Do(func() {
-		file_proto_v1_chef_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_v1_chef_proto_rawDesc), len(file_proto_v1_chef_proto_rawDesc)))
+func file_chef_proto_rawDescGZIP() []byte {
+	file_chef_proto_rawDescOnce.Do(func() {
+		file_chef_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_chef_proto_rawDesc), len(file_chef_proto_rawDesc)))
 	})
-	return file_proto_v1_chef_proto_rawDescData
+	return file_chef_proto_rawDescData
 }
 
-var file_proto_v1_chef_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
-var file_proto_v1_chef_proto_goTypes = []any{
+var file_chef_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_chef_proto_goTypes = []any{
 	(*GenerateRecipeRequest)(nil),  // 0: vchef.v1.GenerateRecipeRequest
 	(*RecipeIngredient)(nil),       // 1: vchef.v1.RecipeIngredient
 	(*GenerateRecipeResponse)(nil), // 2: vchef.v1.GenerateRecipeResponse
-	(*HealthCheckRequest)(nil),     // 3: vchef.v1.HealthCheckRequest
-	(*HealthCheckResponse)(nil),    // 4: vchef.v1.HealthCheckResponse
+	(*ChatHistoryItem)(nil),        // 3: vchef.v1.ChatHistoryItem
+	(*ChatRequest)(nil),            // 4: vchef.v1.ChatRequest
+	(*ChatResponse)(nil),           // 5: vchef.v1.ChatResponse
+	(*HealthCheckRequest)(nil),     // 6: vchef.v1.HealthCheckRequest
+	(*HealthCheckResponse)(nil),    // 7: vchef.v1.HealthCheckResponse
 }
-var file_proto_v1_chef_proto_depIdxs = []int32{
+var file_chef_proto_depIdxs = []int32{
 	1, // 0: vchef.v1.GenerateRecipeResponse.ingredients:type_name -> vchef.v1.RecipeIngredient
-	0, // 1: vchef.v1.ChefService.GenerateRecipe:input_type -> vchef.v1.GenerateRecipeRequest
-	3, // 2: vchef.v1.ChefService.HealthCheck:input_type -> vchef.v1.HealthCheckRequest
-	2, // 3: vchef.v1.ChefService.GenerateRecipe:output_type -> vchef.v1.GenerateRecipeResponse
-	4, // 4: vchef.v1.ChefService.HealthCheck:output_type -> vchef.v1.HealthCheckResponse
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	3, // 1: vchef.v1.ChatRequest.history:type_name -> vchef.v1.ChatHistoryItem
+	2, // 2: vchef.v1.ChatResponse.recipe:type_name -> vchef.v1.GenerateRecipeResponse
+	1, // 3: vchef.v1.ChatResponse.shopping_suggestions:type_name -> vchef.v1.RecipeIngredient
+	0, // 4: vchef.v1.ChefService.GenerateRecipe:input_type -> vchef.v1.GenerateRecipeRequest
+	4, // 5: vchef.v1.ChefService.Chat:input_type -> vchef.v1.ChatRequest
+	6, // 6: vchef.v1.ChefService.HealthCheck:input_type -> vchef.v1.HealthCheckRequest
+	2, // 7: vchef.v1.ChefService.GenerateRecipe:output_type -> vchef.v1.GenerateRecipeResponse
+	5, // 8: vchef.v1.ChefService.Chat:output_type -> vchef.v1.ChatResponse
+	7, // 9: vchef.v1.ChefService.HealthCheck:output_type -> vchef.v1.HealthCheckResponse
+	7, // [7:10] is the sub-list for method output_type
+	4, // [4:7] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
-func init() { file_proto_v1_chef_proto_init() }
-func file_proto_v1_chef_proto_init() {
-	if File_proto_v1_chef_proto != nil {
+func init() { file_chef_proto_init() }
+func file_chef_proto_init() {
+	if File_chef_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_v1_chef_proto_rawDesc), len(file_proto_v1_chef_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_chef_proto_rawDesc), len(file_chef_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_proto_v1_chef_proto_goTypes,
-		DependencyIndexes: file_proto_v1_chef_proto_depIdxs,
-		MessageInfos:      file_proto_v1_chef_proto_msgTypes,
+		GoTypes:           file_chef_proto_goTypes,
+		DependencyIndexes: file_chef_proto_depIdxs,
+		MessageInfos:      file_chef_proto_msgTypes,
 	}.Build()
-	File_proto_v1_chef_proto = out.File
-	file_proto_v1_chef_proto_goTypes = nil
-	file_proto_v1_chef_proto_depIdxs = nil
+	File_chef_proto = out.File
+	file_chef_proto_goTypes = nil
+	file_chef_proto_depIdxs = nil
 }

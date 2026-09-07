@@ -72,6 +72,77 @@ func (s *GrpcServer) GenerateRecipe(ctx context.Context, req *pb.GenerateRecipeR
 	}, nil
 }
 
+func (s *GrpcServer) Chat(ctx context.Context, req *pb.ChatRequest) (*pb.ChatResponse, error) {
+	if req.GetMessage() == "" {
+		return nil, status.Error(codes.InvalidArgument, "message cannot be empty")
+	}
+
+	history := make([]models.ChatHistoryItem, 0, len(req.GetHistory()))
+	for _, h := range req.GetHistory() {
+		history = append(history, models.ChatHistoryItem{
+			Role:    h.GetRole(),
+			Content: h.GetContent(),
+		})
+	}
+
+	modelReq := models.ChatRequest{
+		History:           history,
+		Message:           req.GetMessage(),
+		Inventory:         req.GetInventory(),
+		Language:          req.GetLanguage(),
+		CuisinePreference: req.GetCuisinePreference(),
+		DietaryProfile:    req.GetDietaryProfile(),
+	}
+
+	resp, err := s.chefService.Chat(ctx, modelReq)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to handle chat request: %v", err)
+	}
+
+	var recipePb *pb.GenerateRecipeResponse
+	if resp.Recipe != nil {
+		ingredients := make([]*pb.RecipeIngredient, 0, len(resp.Recipe.Ingredients))
+		for _, ing := range resp.Recipe.Ingredients {
+			ingredients = append(ingredients, &pb.RecipeIngredient{
+				Name:     ing.Name,
+				Quantity: ing.Quantity,
+				Unit:     ing.Unit,
+				InFridge: ing.InFridge,
+			})
+		}
+		recipePb = &pb.GenerateRecipeResponse{
+			Title:        resp.Recipe.Title,
+			Description:  resp.Recipe.Description,
+			PrepTimeMins: int32(resp.Recipe.PrepTimeMins),
+			CookTimeMins: int32(resp.Recipe.CookTimeMins),
+			Servings:     int32(resp.Recipe.Servings),
+			Calories:     int32(resp.Recipe.Calories),
+			ProteinGrams: resp.Recipe.ProteinGrams,
+			FatGrams:     resp.Recipe.FatGrams,
+			CarbsGrams:   resp.Recipe.CarbsGrams,
+			Ingredients:  ingredients,
+			Steps:        resp.Recipe.Steps,
+			GeneratedAt:  resp.Recipe.GeneratedAt.Format("2006-01-02T15:04:05Z07:00"),
+		}
+	}
+
+	shopping := make([]*pb.RecipeIngredient, 0, len(resp.ShoppingSuggestions))
+	for _, ing := range resp.ShoppingSuggestions {
+		shopping = append(shopping, &pb.RecipeIngredient{
+			Name:     ing.Name,
+			Quantity: ing.Quantity,
+			Unit:     ing.Unit,
+			InFridge: ing.InFridge,
+		})
+	}
+
+	return &pb.ChatResponse{
+		Reply:               resp.Reply,
+		Recipe:              recipePb,
+		ShoppingSuggestions: shopping,
+	}, nil
+}
+
 // UnaryAuthInterceptor validates X-Internal-Token metadata header for gRPC requests
 func UnaryAuthInterceptor(expectedToken string) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {

@@ -98,3 +98,24 @@ func TestGrpcGenerateRecipeAuth(t *testing.T) {
 		}
 	})
 }
+
+func TestGrpcChat(t *testing.T) {
+	secret := "test-secret-789"
+	client, cleanup := setupGrpcServer(secret)
+	defer cleanup()
+
+	req := &pb.ChatRequest{
+		Message:  "Що приготувати з сиру?",
+		Language: "uk",
+	}
+
+	ctx := metadata.NewOutgoingContext(context.Background(), metadata.Pairs("x-internal-token", secret))
+	resp, err := client.Chat(ctx, req)
+	if err != nil {
+		t.Fatalf("Chat gRPC failed with valid token: %v", err)
+	}
+
+	if resp.GetReply() == "" {
+		t.Errorf("Expected non-empty reply in Chat gRPC response")
+	}
+}

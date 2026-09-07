@@ -19,6 +19,7 @@ import (
 
 type Generator interface {
 	GenerateRecipe(ctx context.Context, req models.GenerateRecipeRequest) (*models.RecipeResponse, error)
+	Chat(ctx context.Context, req models.ChatRequest) (*models.ChatResponse, error)
 }
 
 type Service struct {

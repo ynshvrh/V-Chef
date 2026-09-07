@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.2
 // - protoc             v7.35.1
-// source: proto/v1/chef.proto
+// source: chef.proto
 
 package vchefv1
 
@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	ChefService_GenerateRecipe_FullMethodName = "/vchef.v1.ChefService/GenerateRecipe"
+	ChefService_Chat_FullMethodName           = "/vchef.v1.ChefService/Chat"
 	ChefService_HealthCheck_FullMethodName    = "/vchef.v1.ChefService/HealthCheck"
 )
 
@@ -28,6 +29,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ChefServiceClient interface {
 	GenerateRecipe(ctx context.Context, in *GenerateRecipeRequest, opts ...grpc.CallOption) (*GenerateRecipeResponse, error)
+	Chat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (*ChatResponse, error)
 	HealthCheck(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error)
 }
 
@@ -49,6 +51,16 @@ func (c *chefServiceClient) GenerateRecipe(ctx context.Context, in *GenerateReci
 	return out, nil
 }
 
+func (c *chefServiceClient) Chat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (*ChatResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ChatResponse)
+	err := c.cc.Invoke(ctx, ChefService_Chat_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *chefServiceClient) HealthCheck(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(HealthCheckResponse)
@@ -64,6 +76,7 @@ func (c *chefServiceClient) HealthCheck(ctx context.Context, in *HealthCheckRequ
 // for forward compatibility.
 type ChefServiceServer interface {
 	GenerateRecipe(context.Context, *GenerateRecipeRequest) (*GenerateRecipeResponse, error)
+	Chat(context.Context, *ChatRequest) (*ChatResponse, error)
 	HealthCheck(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error)
 	mustEmbedUnimplementedChefServiceServer()
 }
@@ -77,6 +90,9 @@ type UnimplementedChefServiceServer struct{}
 
 func (UnimplementedChefServiceServer) GenerateRecipe(context.Context, *GenerateRecipeRequest) (*GenerateRecipeResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GenerateRecipe not implemented")
+}
+func (UnimplementedChefServiceServer) Chat(context.Context, *ChatRequest) (*ChatResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Chat not implemented")
 }
 func (UnimplementedChefServiceServer) HealthCheck(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method HealthCheck not implemented")
@@ -120,6 +136,24 @@ func _ChefService_GenerateRecipe_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ChefService_Chat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChatRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChefServiceServer).Chat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ChefService_Chat_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChefServiceServer).Chat(ctx, req.(*ChatRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ChefService_HealthCheck_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(HealthCheckRequest)
 	if err := dec(in); err != nil {
@@ -150,10 +184,14 @@ var ChefService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ChefService_GenerateRecipe_Handler,
 		},
 		{
+			MethodName: "Chat",
+			Handler:    _ChefService_Chat_Handler,
+		},
+		{
 			MethodName: "HealthCheck",
 			Handler:    _ChefService_HealthCheck_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/v1/chef.proto",
+	Metadata: "chef.proto",
 }

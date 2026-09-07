@@ -17,13 +17,16 @@ func NewRouter(recipeHandler *RecipeHandler, internalToken ...string) http.Handl
 	mux.HandleFunc("GET /health", recipeHandler.HealthCheck)
 
 	var generateHandler http.Handler = http.HandlerFunc(recipeHandler.GenerateRecipe)
+	var chatHandler http.Handler = http.HandlerFunc(recipeHandler.Chat)
 	if token != "" {
 		generateHandler = authMiddleware(token, generateHandler)
+		chatHandler = authMiddleware(token, chatHandler)
 	} else {
 		log.Println("⚠️ V-Chef: INTERNAL_TOKEN is empty — auth header check disabled (dev mode)")
 	}
 
 	mux.Handle("POST /api/v1/recipes/generate", generateHandler)
+	mux.Handle("POST /api/v1/chat", chatHandler)
 
 	// Add CORS middleware wrapper
 	return corsMiddleware(mux)

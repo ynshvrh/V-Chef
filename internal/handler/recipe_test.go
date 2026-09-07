@@ -65,3 +65,33 @@ func TestGenerateRecipeHandler(t *testing.T) {
 		t.Errorf("expected non-empty recipe title")
 	}
 }
+
+func TestChatHandler(t *testing.T) {
+	cfg := &config.Config{Port: "8085"}
+	chefSvc := chef.NewService(cfg)
+	h := NewRecipeHandler(chefSvc)
+
+	payload := models.ChatRequest{
+		Message:  "Hello chef!",
+		Language: "en",
+	}
+	body, _ := json.Marshal(payload)
+
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/chat", bytes.NewReader(body))
+	rec := httptest.NewRecorder()
+
+	h.Chat(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Errorf("expected status 200, got %d", rec.Code)
+	}
+
+	var chatResp models.ChatResponse
+	if err := json.Unmarshal(rec.Body.Bytes(), &chatResp); err != nil {
+		t.Fatalf("failed to unmarshal chat response: %v", err)
+	}
+
+	if chatResp.Reply == "" {
+		t.Errorf("expected non-empty reply in chat response")
+	}
+}
