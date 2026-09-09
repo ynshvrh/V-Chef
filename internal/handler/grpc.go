@@ -52,6 +52,7 @@ func (s *GrpcServer) GenerateRecipe(ctx context.Context, req *pb.GenerateRecipeR
 			Name:     ing.Name,
 			Quantity: ing.Quantity,
 			Unit:     ing.Unit,
+			Category: ing.Category,
 			InFridge: ing.InFridge,
 		})
 	}
@@ -107,6 +108,7 @@ func (s *GrpcServer) Chat(ctx context.Context, req *pb.ChatRequest) (*pb.ChatRes
 				Name:     ing.Name,
 				Quantity: ing.Quantity,
 				Unit:     ing.Unit,
+				Category: ing.Category,
 				InFridge: ing.InFridge,
 			})
 		}
@@ -132,6 +134,7 @@ func (s *GrpcServer) Chat(ctx context.Context, req *pb.ChatRequest) (*pb.ChatRes
 			Name:     ing.Name,
 			Quantity: ing.Quantity,
 			Unit:     ing.Unit,
+			Category: ing.Category,
 			InFridge: ing.InFridge,
 		})
 	}

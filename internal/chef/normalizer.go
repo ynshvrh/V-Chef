@@ -113,10 +113,16 @@ func NormalizeIngredient(ing models.RecipeIngredient) models.RecipeIngredient {
 		cleanName = capitalizeFirst(rawName)
 	}
 
+	category := strings.TrimSpace(ing.Category)
+	if category == "" || category == "other" {
+		category = InferCategory(cleanName)
+	}
+
 	return models.RecipeIngredient{
 		Name:     cleanName,
 		Quantity: qty,
 		Unit:     unit,
+		Category: category,
 		InFridge: ing.InFridge,
 	}
 }
@@ -223,4 +229,117 @@ func capitalizeFirst(s string) string {
 	}
 	r, size := utf8.DecodeRuneInString(s)
 	return string(unicode.ToUpper(r)) + s[size:]
+}
+
+var ukrSuffixes = []string{
+	"ами", "ями", "ного", "ному", "них", "ній", "ної", "ним", "ний",
+	"ою", "ею", "єю", "ом", "ем", "єм", "ів", "ей",
+	"на", "не", "ні", "та", "те", "ті",
+	"а", "я", "и", "і", "у", "ю", "е", "є", "о",
+}
+
+func stripUkrainianEnding(w string) string {
+	runes := []rune(w)
+	for _, suffix := range ukrSuffixes {
+		sRunes := []rune(suffix)
+		if strings.HasSuffix(w, suffix) && len(runes)-len(sRunes) >= 3 {
+			return string(runes[:len(runes)-len(sRunes)])
+		}
+	}
+	return w
+}
+
+func matchAnyStem(text string, stems ...string) bool {
+	for _, stem := range stems {
+		if strings.Contains(text, stem) {
+			return true
+		}
+	}
+	words := strings.FieldsFunc(text, func(r rune) bool {
+		return unicode.IsSpace(r) || unicode.IsPunct(r)
+	})
+	for _, word := range words {
+		stripped := stripUkrainianEnding(word)
+		for _, stem := range stems {
+			if strings.HasPrefix(stripped, stem) || strings.HasPrefix(word, stem) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// InferCategory determines the ProductCategories slug from the ingredient name
+func InferCategory(name string) string {
+	lower := strings.ToLower(strings.TrimSpace(name))
+	if lower == "" {
+		return "other"
+	}
+
+	// 1. Prepared meals
+	if matchAnyStem(lower, "борщ", "суп", "рагу", "плов", "запіканк", "котлет", "омлет", "голубц", "вареник", "дерун", "сирник", "млинц") {
+		return "prepared-meals"
+	}
+
+	// 2. Sauces, oils, spices
+	if matchAnyStem(lower, "сіл", "сол", "salt", "олі", "oil", "перец", "перц", "pepper", "соус", "sauce", "паприк", "спеці", "spice", "кориц", "оцет", "оцт", "vinegar", "майонез", "mayo", "кетчуп", "ketchup", "гірчиц", "mustard", "приправ", "лавр", "каррі", "curry", "ореган", "базилік", "куркум", "сироп", "syrup") {
+		return "sauces"
+	}
+
+	// 3. Dairy
+	if matchAnyStem(lower, "молок", "milk", "сир", "cheese", "масл", "butter", "сметан", "sour cream", "кефір", "kefir", "йогурт", "yogurt", "творог", "cottage cheese", "вершк", "cream", "ряжанк", "моцарел", "пармезан", "сулугуні", "бринз") {
+		return "dairy"
+	}
+
+	// 4. Meat & Fish
+	if matchAnyStem(lower, "м'яс", "м’яс", "meat", "кур", "chicken", "фарш", "mince", "свинин", "pork", "яловичин", "beef", "телятин", "veal", "риб", "fish", "лосос", "salmon", "тунец", "тунц", "tuna", "креветк", "shrimp", "філе", "filet", "fillet", "бекон", "bacon", "ковбас", "sausage", "сосиск", "індичк", "turkey", "качк", "duck") {
+		return "meat-fish"
+	}
+
+	// 5. Vegetables & greens
+	if matchAnyStem(lower, "цибул", "onion", "часник", "garlic", "моркв", "carrot", "картопл", "potato", "помідор", "томат", "tomato", "огірок", "огірк", "cucumber", "капуст", "cabbage", "зелен", "петрушк", "parsley", "кріп", "кроп", "dill", "шпинат", "spinach", "салат", "lettuce", "кабачок", "кабачк", "zucchini", "баклажан", "eggplant", "броккол", "broccoli", "гриб", "mushroom", "печериц") {
+		return "vegetables"
+	}
+
+	// 6. Fruits & berries
+	if matchAnyStem(lower, "яблук", "apple", "банан", "banana", "лимон", "lemon", "лайм", "lime", "апельсин", "orange", "мандарин", "полуниц", "strawberry", "малин", "raspberry", "ягід", "ягод", "berries", "груш", "pear", "виноград", "grape", "авокадо", "avocado", "персик", "peach") {
+		return "fruits"
+	}
+
+	// 7. Bread & Bakery
+	if matchAnyStem(lower, "хліб", "bread", "батон", "булочк", "булк", "bun", "лаваш", "піт", "pita", "багет", "baguette", "круасан") {
+		return "bakery"
+	}
+
+	// 8. Pantry staples
+	if matchAnyStem(lower, "борошн", "flour", "рис", "rice", "гречк", "buckwheat", "макарон", "pasta", "спагет", "spaghetti", "цукор", "цукр", "sugar", "вівсян", "oats", "oatmeal", "круп", "квасол", "beans", "горох", "peas", "сочевиц", "lentils", "дріждж", "yeast", "крохмал", "starch") {
+		return "pantry"
+	}
+
+	// 9. Drinks
+	if matchAnyStem(lower, "вод", "water", "сік", "сок", "juice", "чай", "tea", "кав", "coffee", "морс", "компот") {
+		return "drinks"
+	}
+
+	// 10. Alcohol
+	if matchAnyStem(lower, "вин", "wine", "пив", "beer", "горілк", "vodka", "коньяк", "віскі", "whiskey", "ром", "rum") {
+		return "alcohol"
+	}
+
+	// 11. Snacks & sweets
+	if matchAnyStem(lower, "шоколад", "chocolate", "печив", "cookie", "цукерк", "candy", "горіх", "nuts", "чипс", "chips") {
+		return "snacks"
+	}
+
+	// 12. Frozen
+	if matchAnyStem(lower, "заморож", "frozen") {
+		return "frozen"
+	}
+
+	// 13. Canned
+	if matchAnyStem(lower, "консерв", "canned", "тушонк", "шпрот") {
+		return "canned-prepared"
+	}
+
+	return "other"
 }

@@ -72,6 +72,7 @@ CRITICAL GASTRONOMIC & REALISM RULES:
    - "name": MUST contain ONLY the pure product name (e.g., "Морква", "Борошно", "Молоко", "Куряче філе"). NEVER include digits, counts, or units in the "name" field (e.g., NEVER "1 морква", "200г борошна").
    - "quantity": Numeric quantity only (e.g., 1, 200, 0.5).
    - "unit": Standard unit only (e.g., "шт", "г", "кг", "мл", "л", "ст.л.", "ч.л.", "дрібка", "зубчик").
+   - "category": Category slug ("dairy", "meat-fish", "vegetables", "fruits", "bakery", "pantry", "snacks", "drinks", "sauces", "frozen", "canned-prepared", "other").
    - "in_fridge": boolean (true if user already has it in fridge, false if missing/to buy).
 
 Return ONLY a valid JSON object matching this schema without markdown code blocks, backticks, or extra text:
@@ -86,7 +87,7 @@ Return ONLY a valid JSON object matching this schema without markdown code block
   "fat_grams": 15.0,
   "carbs_grams": 40.0,
   "ingredients": [
-    {"name": "Морква", "quantity": 1, "unit": "шт", "in_fridge": true}
+    {"name": "Морква", "quantity": 1, "unit": "шт", "category": "vegetables", "in_fridge": true}
   ],
   "steps": [
     "Step 1...", "Step 2..."

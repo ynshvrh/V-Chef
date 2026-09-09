@@ -16,6 +16,7 @@ type RecipeIngredient struct {
 	Name     string  `json:"name"`               // e.g. "Milk"
 	Quantity float64 `json:"quantity,omitempty"` // e.g. 200
 	Unit     string  `json:"unit,omitempty"`     // e.g. "ml"
+	Category string  `json:"category,omitempty"` // e.g. "dairy"
 	InFridge bool    `json:"in_fridge"`          // true if caller already has it
 }
 

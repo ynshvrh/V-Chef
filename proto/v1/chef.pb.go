@@ -103,6 +103,7 @@ type RecipeIngredient struct {
 	Quantity      float64                `protobuf:"fixed64,2,opt,name=quantity,proto3" json:"quantity,omitempty"`
 	Unit          string                 `protobuf:"bytes,3,opt,name=unit,proto3" json:"unit,omitempty"`
 	InFridge      bool                   `protobuf:"varint,4,opt,name=in_fridge,json=inFridge,proto3" json:"in_fridge,omitempty"`
+	Category      string                 `protobuf:"bytes,5,opt,name=category,proto3" json:"category,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -163,6 +164,13 @@ func (x *RecipeIngredient) GetInFridge() bool {
 		return x.InFridge
 	}
 	return false
+}
+
+func (x *RecipeIngredient) GetCategory() string {
+	if x != nil {
+		return x.Category
+	}
+	return ""
 }
 
 type GenerateRecipeResponse struct {
@@ -584,12 +592,13 @@ const file_chef_proto_rawDesc = "" +
 	"\tmeal_type\x18\x02 \x01(\tR\bmealType\x12)\n" +
 	"\x10dietary_category\x18\x03 \x01(\tR\x0fdietaryCategory\x12+\n" +
 	"\x12max_prep_time_mins\x18\x04 \x01(\x05R\x0fmaxPrepTimeMins\x12'\n" +
-	"\x0ftarget_calories\x18\x05 \x01(\x05R\x0etargetCalories\"s\n" +
+	"\x0ftarget_calories\x18\x05 \x01(\x05R\x0etargetCalories\"\x8f\x01\n" +
 	"\x10RecipeIngredient\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1a\n" +
 	"\bquantity\x18\x02 \x01(\x01R\bquantity\x12\x12\n" +
 	"\x04unit\x18\x03 \x01(\tR\x04unit\x12\x1b\n" +
-	"\tin_fridge\x18\x04 \x01(\bR\binFridge\"\xae\x03\n" +
+	"\tin_fridge\x18\x04 \x01(\bR\binFridge\x12\x1a\n" +
+	"\bcategory\x18\x05 \x01(\tR\bcategory\"\xae\x03\n" +
 	"\x16GenerateRecipeResponse\x12\x14\n" +
 	"\x05title\x18\x01 \x01(\tR\x05title\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12$\n" +

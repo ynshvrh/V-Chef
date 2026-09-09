@@ -66,6 +66,7 @@ GASTRONOMIC & OPERATIONAL RULES:
    - "name": Pure product name only (e.g. "Морква", "Куряче філе", "Carrot", "Flour"). Never prefix with numbers or units!
    - "quantity": Numeric quantity (e.g. 1, 200, 0.5).
    - "unit": Standard unit ("шт", "г", "кг", "мл", "л", "ст. л.", "ч. л.", "дрібка", "зубчик" or "pcs", "g", "kg", "ml", "l", "tbsp", "tsp", "pinch", "clove").
+   - "category": Standard category slug ("dairy", "meat-fish", "vegetables", "fruits", "bakery", "pantry", "snacks", "drinks", "sauces", "frozen", "canned-prepared", "other").
    - "in_fridge": boolean. Set to true if already in user's fridge inventory, false if missing.
 4. If ingredients are missing to cook the suggested recipe, list them in "shopping_suggestions".
 5. If the user only asks a question (or gives a greeting) and does NOT ask for a recipe, set "recipe" to null and "shopping_suggestions" to empty array.
@@ -90,12 +91,12 @@ Return ONLY a valid JSON object matching this exact schema:
     "fat_grams": 15.0,
     "carbs_grams": 40.0,
     "ingredients": [
-      {"name": "Морква", "quantity": 1, "unit": "шт", "in_fridge": true}
+      {"name": "Морква", "quantity": 1, "unit": "шт", "category": "vegetables", "in_fridge": true}
     ],
     "steps": ["Step 1...", "Step 2..."]
   },
   "shopping_suggestions": [
-    {"name": "Сметана", "quantity": 1, "unit": "уп", "in_fridge": false}
+    {"name": "Сметана", "quantity": 1, "unit": "уп", "category": "dairy", "in_fridge": false}
   ]
 }`,
 		langInstruction,
