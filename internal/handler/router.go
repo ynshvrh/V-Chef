@@ -19,10 +19,12 @@ func NewRouter(recipeHandler *RecipeHandler, internalToken ...string) http.Handl
 	var generateHandler http.Handler = http.HandlerFunc(recipeHandler.GenerateRecipe)
 	var chatHandler http.Handler = http.HandlerFunc(recipeHandler.Chat)
 	var mealPlanHandler http.Handler = http.HandlerFunc(recipeHandler.GenerateMealPlan)
+	var estimateHandler http.Handler = http.HandlerFunc(recipeHandler.EstimateNutrition)
 	if token != "" {
 		generateHandler = authMiddleware(token, generateHandler)
 		chatHandler = authMiddleware(token, chatHandler)
 		mealPlanHandler = authMiddleware(token, mealPlanHandler)
+		estimateHandler = authMiddleware(token, estimateHandler)
 	} else {
 		log.Println("⚠️ V-Chef: INTERNAL_TOKEN is empty — auth header check disabled (dev mode)")
 	}
@@ -30,6 +32,7 @@ func NewRouter(recipeHandler *RecipeHandler, internalToken ...string) http.Handl
 	mux.Handle("POST /api/v1/recipes/generate", generateHandler)
 	mux.Handle("POST /api/v1/chat", chatHandler)
 	mux.Handle("POST /api/v1/mealplan/generate", mealPlanHandler)
+	mux.Handle("POST /api/v1/nutrition/estimate", estimateHandler)
 
 	// Add CORS middleware wrapper
 	return corsMiddleware(mux)
