@@ -84,3 +84,30 @@ func (h *RecipeHandler) Chat(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(resp)
 }
+
+func (h *RecipeHandler) GenerateMealPlan(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, `{"error":"Method not allowed"}`, http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req models.MealPlanRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(map[string]string{"error": "Invalid request body format"})
+		return
+	}
+
+	resp, err := h.chefService.GenerateMealPlan(r.Context(), req)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		_ = json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(resp)
+}
